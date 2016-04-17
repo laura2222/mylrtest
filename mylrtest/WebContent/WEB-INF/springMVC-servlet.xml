@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:cache="http://www.springframework.org/schema/cache" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+     http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+     http://www.springframework.org/schema/aop
+     http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+     http://www.springframework.org/schema/context
+     http://www.springframework.org/schema/context/spring-context-4.0.xsd
+     http://www.springframework.org/schema/tx
+     http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+     http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-4.0.xsd">
+	
+	<context:annotation-config/>
+	
+	<context:component-scan base-package="com.lauren.lr.test">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Service" />
+	</context:component-scan>
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="create*" propagation="REQUIRED"/>
+			<tx:method name="save*" propagation="REQUIRED"/>
+			<tx:method name="save*" propagation="REQUIRED"/>
+			<tx:method name="add*" propagation="REQUIRED"/>
+			<tx:method name="insert*" propagation="REQUIRED"/>
+			<tx:method name="update*" propagation="REQUIRED"/>
+			<tx:method name="remove*" propagation="REQUIRED"/>
+			<tx:method name="del*" propagation="REQUIRED"/>
+			<tx:method name="import*" propagation="REQUIRED"/>
+			<tx:method name="*" propagation="NOT_SUPPORTED" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>	
+	
+	<aop:config>
+		<aop:pointcut id="serviceOperation" expression="execution(* com.lauren.lr.test.service.*.*(..))"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation"/>
+	</aop:config>
+	
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate4.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="packagesToScan">
+			<value>com.lauren.lr.test.entity*</value>
+		</property>	
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+				<prop  key="show_sql">true</prop>	
+				<prop key="hibernate.jdbc.batch_size">20</prop>
+				<prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext</prop>
+			</props>
+		</property>
+	</bean>
+	<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
+        
+	<bean class="com.lauren.lr.test.dao.CpuDaoImpl" id="cpuDao">
+		<!-- <property name="sessionFactory" ref="sessionFactory" ></property>--> 	 	
+	</bean>	 
+
+	<bean  class="com.lauren.lr.test.service.CpuServiceImpl" id="cpuService">
+		<!-- <property name="cpuDao" ref="cpuDao"></property> -->
+	</bean>
+
+	<bean id="dataSource"  class="org.apache.commons.dbcp2.BasicDataSource"
+		  destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url">
+			<value>jdbc:mysql://192.168.1.122:3306/kd</value>
+		</property>
+		<property name="username">
+			<value>hksgr</value>
+		</property>		
+		<property name="password">
+			<value>k123</value>
+		</property>
+		<property name="initialSize">
+			<value>1</value>
+		</property>
+		<property name="maxWaitMillis">
+			<value>6000</value>
+		</property>
+		<property name="maxIdle">
+			<value>20</value>
+		</property>
+		<property name="minIdle">
+			<value>3</value>
+		</property>
+	</bean>	
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	
+	<!--
+	<bean id="cpuController"  class="com.lauren.lr.test.controller.CpuContrl">
+		<property name="cpuService" ref="cpuService"></property>
+	</bean> -->
+	<!-- spring mvc相关-->
+	
+	
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" />
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+		p:prefix="/common/" p:suffix=".jsp" />
+		
+</beans>
